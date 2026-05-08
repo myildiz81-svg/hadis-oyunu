@@ -1,0 +1,44 @@
+name: Build APK
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Kodları Çek
+        uses: actions/checkout@v4
+
+      - name: Python Kurulumu
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Gerekli Paketleri ve Cython'u Kur
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev
+          pip install "Cython==0.29.33" buildozer
+
+      - name: Buildozer Ayarlarını Oluştur
+        run: |
+          yes | buildozer init
+          sed -i 's/^title = .*/title = Hadis Oyunu/' buildozer.spec
+          sed -i 's/^package\.name = .*/package.name = hadisoyunu/' buildozer.spec
+          sed -i 's/^package\.domain = .*/package.domain = org.mustafa/' buildozer.spec
+          sed -i 's/^requirements = .*/requirements = python3, kivy==2.3.0, kivymd, pillow/' buildozer.spec
+          sed -i 's/^source\.include_exts = .*/source.include_exts = py,png,jpg,kv,atlas/' buildozer.spec
+          echo "android.accept_sdk_license = True" >> buildozer.spec
+
+      - name: APK Derleme İşlemini Başlat (Bu aşama 15-20 dk sürer)
+        run: buildozer android debug
+
+      - name: Hazır APK'yı İndirmeye Sun
+        uses: actions/upload-artifact@v4
+        with:
+          name: HadisOyunu-APK
+          path: bin/*.apk
