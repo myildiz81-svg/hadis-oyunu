@@ -34,7 +34,8 @@ jobs:
           source.dir = .
           source.include_exts = py,png,jpg,kv,atlas
           version = 0.1
-          requirements = python3,kivy==2.2.1,kivymd==1.1.1,pillow==9.5.0
+          # Sürümleri sildik ki sistem kendi Android uyumlu yamalarını kullansın!
+          requirements = python3,kivy,kivymd,pillow
           orientation = portrait
           osx.python_version = 3
           osx.kivy_version = 1.9.1
@@ -48,7 +49,11 @@ jobs:
           EOF
 
       - name: APK Derleme İşlemini Başlat
-        run: yes | buildozer android debug
+        run: |
+          # İŞTE ÇÖKÜŞÜ ENGELLEYEN KİLİT: Masaüstü eklentilerini iptal ediyoruz!
+          export DISABLE_TKINTER=1
+          export DISABLE_BZIP2=1
+          yes | buildozer android debug
 
       - name: Hazır APK'yı İndirmeye Sun
         uses: actions/upload-artifact@v4
